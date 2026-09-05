@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Keyhold — an offline password manager that remembers every change</title>
+    <meta
+      name="description"
+      content="A free, open-source, fully offline password manager. One encrypted file you own, no account and no server, with a version history that records what changed, when, and from which device."
+    />
+    <link rel="canonical" href="https://keyhold.app/" />
+
+    <!--
+      No third-party origin appears anywhere in this document, and that is deliberate rather
+      than incidental. This is a page about a program that makes no network requests; loading
+      a webfont, an analytics script or an icon sprite from somebody else's server would let
+      that third party see who reads about a password manager. The system font stack is used
+      instead, every icon is inline SVG, and there is nothing to count visitors with.
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+
+    <meta name="theme-color" content="#12131a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f7f9" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Keyhold" />
+    <meta
+      property="og:title"
+      content="Keyhold — an offline password manager that remembers every change"
+    />
+    <meta
+      property="og:description"
+      content="One encrypted file you own. No account, no server, no telemetry, no subscription — and a full version history with the device and network each change came from."
+    />
+    <meta property="og:image" content="/screenshots/Keyhold-Screenshot-03.png" />
+    <meta
+      property="og:image:alt"
+      content="Keyhold showing a credential's version history, with the device each change came from"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <!--
+        Not a courtesy. People who block JavaScript are disproportionately the audience for an
+        offline password manager, and a blank page would be the wrong first impression to give
+        exactly the reader most likely to be interested.
+      -->
+      <div style="max-width: 60ch; margin: 12vh auto; padding: 0 24px; line-height: 1.6">
+        <h1>Keyhold</h1>
+        <p>
+          A free, open-source, fully offline password manager. Your passwords live in one encrypted
+          file that you own — no account, no server, no telemetry and no subscription — with a
+          version history that records what changed, when, and from which device.
+        </p>
+        <p>
+          This page needs JavaScript to render, which is a fair thing to have turned off. Everything
+          it would tell you is in the repository:
+          <a href="https://github.com/AnahatM/Keyhold">github.com/AnahatM/Keyhold</a>.
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,943 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+
+/**
+ * Tokens, and the page's whole visual system.
+ *
+ * ## The palettes are Keyhold's own
+ *
+ * `--kh-*` below is copied from `src/shared/theme/themes.ts` in the Keyhold repository —
+ * Midnight for dark, Dawn for light, the app's two defaults. Not decoration: a marketing page
+ * whose colours are nothing like the product is doing the visitor a small disservice, and this
+ * page's screenshots are of an app painted in exactly these values.
+ *
+ * ## Hand-written CSS over custom properties, no Tailwind and no CSS-in-JS
+ *
+ * The same house rule Keyhold itself follows. A site arguing that a password manager should
+ * ship almost nothing should not itself ship a utility framework to draw eleven sections.
+ *
+ * ## Zero hardcoded colours below the token block
+ *
+ * Every colour in every rule is a `var(--kh-*)`. That is Keyhold's hard rule 4, kept here for
+ * the same reason: the moment one literal hex creeps into a component, the light theme has a
+ * hole in it that nobody will notice until somebody with a light OS opens the page.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ── Midnight — Keyhold's default dark theme ───────────────────────────── */
+  --kh-bg: #12131a;
+  --kh-surface: #1a1c26;
+  --kh-surface-raised: #232634;
+  --kh-surface-sunken: #0e0f15;
+  --kh-surface-hover: #262a39;
+
+  --kh-border: #2e3244;
+  --kh-border-strong: #6d7590;
+  --kh-focus-ring: #7aa2ff;
+
+  --kh-text: #e7e9ee;
+  --kh-text-muted: #a8adbe;
+  --kh-text-subtle: #858b9e;
+
+  --kh-accent: #7aa2ff;
+  --kh-accent-hover: #9ab8ff;
+  --kh-accent-on: #0e1220;
+  --kh-accent-subtle: #1e2740;
+  --kh-accent-subtle-text: #a9c3ff;
+
+  --kh-success: #4ec98a;
+  --kh-warning: #e0a44a;
+  --kh-warning-text: #eab76e;
+  --kh-warning-subtle: #2b2216;
+  --kh-danger: #f0707c;
+
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --kh-font:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --kh-font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* ── Spacing and shape ─────────────────────────────────────────────────── */
+  --kh-radius: 10px;
+  --kh-radius-lg: 16px;
+  --kh-page: 1120px;
+  --kh-gutter: 24px;
+
+  /* Elevation, kept deliberately shallow. A security tool that looks like a casino is
+     making an argument against itself. */
+  --kh-shadow: 0 1px 2px rgb(0 0 0 / 0.28), 0 8px 24px rgb(0 0 0 / 0.22);
+  --kh-shadow-lift: 0 2px 4px rgb(0 0 0 / 0.3), 0 18px 48px rgb(0 0 0 / 0.34);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* ── Dawn — Keyhold's default light theme ──────────────────────────────── */
+  --kh-bg: #f7f7f9;
+  --kh-surface: #ffffff;
+  --kh-surface-raised: #ffffff;
+  --kh-surface-sunken: #f0f0f4;
+  --kh-surface-hover: #eceef3;
+
+  --kh-border: #dfe1e8;
+  /* Kept at a fixed value rather than faded with the surface: it carries WCAG 1.4.11 weight
+     and this palette has no headroom — it clears 3.0 on `bg` by a hair. */
+  --kh-border-strong: #83879c;
+  --kh-focus-ring: #3355cc;
+
+  --kh-text: #1b1c22;
+  --kh-text-muted: #55596b;
+  --kh-text-subtle: #767b8f;
+
+  --kh-accent: #3355cc;
+  --kh-accent-hover: #2a47ad;
+  --kh-accent-on: #ffffff;
+  --kh-accent-subtle: #e6ebfb;
+  --kh-accent-subtle-text: #25409c;
+
+  --kh-success: #1a7f4b;
+  --kh-warning: #9a6300;
+  --kh-warning-text: #7d5000;
+  --kh-warning-subtle: #fdf1dc;
+  --kh-danger: #c22a34;
+
+  --kh-shadow: 0 1px 2px rgb(24 25 32 / 0.06), 0 8px 24px rgb(24 25 32 / 0.07);
+  --kh-shadow-lift: 0 2px 4px rgb(24 25 32 / 0.08), 0 18px 48px rgb(24 25 32 / 0.12);
+}
+
+/* ── Reset ────────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Anchored sections must not land under the sticky header. */
+  scroll-padding-top: 88px;
+}
+
+body {
+  background: var(--kh-bg);
+  color: var(--kh-text);
+  font-family: var(--kh-font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--kh-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--kh-accent-hover);
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--kh-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Layout primitives ────────────────────────────────────────────────────── */
+
+.kh-wrap {
+  width: 100%;
+  max-width: var(--kh-page);
+  margin-inline: auto;
+  padding-inline: var(--kh-gutter);
+}
+
+.kh-section {
+  padding-block: 96px;
+  border-top: 1px solid var(--kh-border);
+}
+
+.kh-section--plain {
+  border-top: none;
+}
+
+.kh-section__eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--kh-accent-subtle-text);
+  margin-bottom: 12px;
+}
+
+.kh-section__title {
+  font-size: clamp(1.65rem, 3.4vw, 2.3rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  max-width: 22ch;
+}
+
+.kh-section__lede {
+  margin-top: 16px;
+  max-width: 62ch;
+  color: var(--kh-text-muted);
+  font-size: 1.05rem;
+}
+
+/* Scroll reveal. Elements start visible and are hidden only once the observer is known to
+   be running, so a page with no JavaScript — or a failed hydration — is still readable. */
+.kh-reveal {
+  opacity: 1;
+}
+
+.kh-reveal--armed {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kh-reveal--shown {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+
+.kh-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--kh-bg) 86%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--kh-border);
+}
+
+.kh-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 64px;
+}
+
+.kh-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  color: var(--kh-text);
+}
+
+.kh-header__brand:hover {
+  text-decoration: none;
+  color: var(--kh-text);
+}
+
+.kh-header__nav {
+  display: flex;
+  gap: 22px;
+  margin-left: auto;
+}
+
+.kh-header__nav a {
+  color: var(--kh-text-muted);
+  font-size: 0.93rem;
+}
+
+.kh-header__nav a:hover {
+  color: var(--kh-text);
+  text-decoration: none;
+}
+
+.kh-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.kh-header__nav + .kh-header__actions {
+  margin-left: 22px;
+}
+
+@media (max-width: 880px) {
+  .kh-header__nav {
+    display: none;
+  }
+}
+
+.kh-iconbutton {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  color: var(--kh-text-muted);
+  background: var(--kh-surface);
+}
+
+.kh-iconbutton:hover {
+  color: var(--kh-text);
+  background: var(--kh-surface-hover);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.kh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border-radius: var(--kh-radius);
+  font-weight: 560;
+  font-size: 0.96rem;
+  border: 1px solid transparent;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.kh-button:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.kh-button--primary {
+  background: var(--kh-accent);
+  color: var(--kh-accent-on);
+}
+
+.kh-button--primary:hover {
+  background: var(--kh-accent-hover);
+  color: var(--kh-accent-on);
+}
+
+.kh-button--ghost {
+  background: var(--kh-surface);
+  border-color: var(--kh-border-strong);
+  color: var(--kh-text);
+}
+
+.kh-button--ghost:hover {
+  background: var(--kh-surface-hover);
+  color: var(--kh-text);
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+
+.kh-hero {
+  position: relative;
+  padding-block: 88px 72px;
+  overflow: hidden;
+}
+
+/* A faint blueprint grid, borrowed in spirit from the app's Holographic style. Decorative
+   only, and behind everything — `aria-hidden` in the markup rather than a background image,
+   so no request is made for it. */
+.kh-hero__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--kh-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--kh-border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  /* Fades out downward and inward, so it is texture behind the headline rather than a
+     pattern the eye has to read past. Both properties, because Safari still wants the
+     prefix and a grid that only appears in Chromium is worse than none. */
+  -webkit-mask-image: radial-gradient(120% 90% at 78% 8%, rgb(0 0 0 / 0.85), transparent 62%);
+  mask-image: radial-gradient(120% 90% at 78% 8%, rgb(0 0 0 / 0.85), transparent 62%);
+  opacity: 0.9;
+}
+
+/*
+ * One column, deliberately.
+ *
+ * The first version put the copy and the screenshot side by side, which left the image about
+ * 560px wide on a 1440px display — a 1384px screenshot of a three-pane desktop application
+ * scaled to 40%, where none of the text a visitor is being asked to be impressed by can be
+ * read. A screenshot nobody can read is decoration, and decoration is not what earns trust in
+ * the first three seconds. Full width, under the copy, is legible.
+ */
+.kh-hero__inner {
+  position: relative;
+  display: grid;
+  gap: 44px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kh-hero__copy {
+  max-width: 62ch;
+}
+
+.kh-hero__title {
+  font-size: clamp(2.2rem, 5.2vw, 3.4rem);
+  line-height: 1.07;
+  letter-spacing: -0.033em;
+  font-weight: 680;
+  max-width: 19ch;
+}
+
+.kh-hero__lede {
+  margin-top: 20px;
+  font-size: 1.14rem;
+  color: var(--kh-text-muted);
+  max-width: 52ch;
+}
+
+.kh-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.kh-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 22px;
+  font-size: 0.87rem;
+  color: var(--kh-text-subtle);
+}
+
+.kh-hero__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.kh-hero__shot {
+  border-radius: var(--kh-radius-lg);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface-sunken);
+  box-shadow: var(--kh-shadow-lift);
+  overflow: hidden;
+}
+
+.kh-hero__shot img {
+  width: 100%;
+  height: auto;
+}
+
+/* ── The pre-release notice ───────────────────────────────────────────────── */
+
+.kh-notice {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-warning);
+  background: var(--kh-warning-subtle);
+  color: var(--kh-text);
+}
+
+.kh-notice__icon {
+  flex: none;
+  color: var(--kh-warning-text);
+  margin-top: 2px;
+}
+
+.kh-notice strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--kh-warning-text);
+}
+
+.kh-notice p {
+  font-size: 0.93rem;
+  color: var(--kh-text-muted);
+}
+
+.kh-notice--top {
+  margin-top: 40px;
+}
+
+/* ── The three-line pitch ─────────────────────────────────────────────────── */
+
+.kh-pitch {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  margin-top: 44px;
+}
+
+.kh-pitch__item {
+  padding: 24px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface);
+}
+
+.kh-pitch__item h3 {
+  font-size: 1.02rem;
+  font-weight: 620;
+  margin-bottom: 8px;
+}
+
+.kh-pitch__item p {
+  color: var(--kh-text-muted);
+  font-size: 0.95rem;
+}
+
+/* ── The audit-trail spotlight ────────────────────────────────────────────── */
+
+/*
+ * Image above, points below — not side by side.
+ *
+ * Two columns put a five-item list against one image and centred them, which left a
+ * screen-sized hole above the picture and shrank it to the point of illegibility. Stacking
+ * gives the image the full column and lets the points run two-up underneath, which is also
+ * the order somebody reads in: see the thing, then read what it does.
+ */
+.kh-spotlight {
+  display: grid;
+  gap: 44px;
+  margin-top: 44px;
+}
+
+.kh-spotlight__points {
+  display: grid;
+  gap: 26px 40px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.kh-spotlight__point {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.kh-spotlight__marker {
+  width: 9px;
+  height: 9px;
+  margin-top: 9px;
+  border-radius: 50%;
+  background: var(--kh-accent);
+}
+
+.kh-spotlight__point h4 {
+  font-size: 0.98rem;
+  font-weight: 620;
+  margin-bottom: 3px;
+}
+
+.kh-spotlight__point p {
+  color: var(--kh-text-muted);
+  font-size: 0.94rem;
+}
+
+/* ── Feature grid ─────────────────────────────────────────────────────────── */
+
+.kh-features {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  margin-top: 44px;
+}
+
+.kh-feature {
+  padding: 24px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.kh-feature:hover {
+  border-color: var(--kh-border-strong);
+  background: var(--kh-surface-raised);
+}
+
+.kh-feature h3 {
+  font-size: 1rem;
+  font-weight: 620;
+  margin-bottom: 9px;
+}
+
+.kh-feature p {
+  color: var(--kh-text-muted);
+  font-size: 0.93rem;
+}
+
+/* ── Architecture ─────────────────────────────────────────────────────────── */
+
+.kh-arch {
+  display: grid;
+  gap: 44px;
+  margin-top: 44px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .kh-arch {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.kh-arch__diagram {
+  display: grid;
+  gap: 10px;
+  padding: 24px;
+  border-radius: var(--kh-radius-lg);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface-sunken);
+  font-family: var(--kh-font-mono);
+  font-size: 0.84rem;
+}
+
+.kh-arch__box {
+  padding: 16px 18px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface);
+}
+
+.kh-arch__box strong {
+  display: block;
+  font-family: var(--kh-font);
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.kh-arch__box span {
+  color: var(--kh-text-subtle);
+  line-height: 1.55;
+}
+
+.kh-arch__box--main {
+  border-color: var(--kh-accent);
+  background: var(--kh-accent-subtle);
+}
+
+.kh-arch__box--main strong {
+  color: var(--kh-accent-subtle-text);
+}
+
+.kh-arch__bridge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 8px;
+  color: var(--kh-text-subtle);
+  font-size: 0.78rem;
+}
+
+.kh-arch__bridge::before,
+.kh-arch__bridge::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--kh-border-strong);
+}
+
+.kh-arch__list {
+  display: grid;
+  gap: 18px;
+  margin-top: 26px;
+  padding: 0;
+  list-style: none;
+}
+
+.kh-arch__list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  color: var(--kh-text-muted);
+  font-size: 0.95rem;
+}
+
+.kh-arch__list svg {
+  margin-top: 3px;
+  color: var(--kh-success);
+  flex: none;
+}
+
+/* ── Screenshots ──────────────────────────────────────────────────────────── */
+
+/*
+ * One per row. These are captures of a three-pane desktop application at 1384px; two to a row
+ * renders them at about 540px, where the interface being demonstrated is a grey blur. A
+ * shorter page of unreadable pictures is worse than a longer one of readable ones.
+ */
+.kh-shots {
+  display: grid;
+  gap: 52px;
+  margin-top: 44px;
+}
+
+.kh-shot figure {
+  margin: 0;
+}
+
+.kh-shot__frame {
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface-sunken);
+  box-shadow: var(--kh-shadow);
+  overflow: hidden;
+}
+
+.kh-shot__frame img {
+  width: 100%;
+  height: auto;
+}
+
+.kh-shot figcaption {
+  margin-top: 12px;
+  color: var(--kh-text-muted);
+  font-size: 0.9rem;
+}
+
+.kh-shots__note {
+  margin-top: 32px;
+  padding: 18px 20px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface-sunken);
+  color: var(--kh-text-muted);
+  font-size: 0.9rem;
+  max-width: 78ch;
+}
+
+.kh-shots__note code {
+  font-family: var(--kh-font-mono);
+  font-size: 0.85em;
+  color: var(--kh-text);
+}
+
+/* ── The honest comparison ────────────────────────────────────────────────── */
+
+.kh-honest {
+  margin-top: 44px;
+  border: 1px solid var(--kh-border);
+  border-radius: var(--kh-radius-lg);
+  overflow: hidden;
+}
+
+.kh-honest__row {
+  display: grid;
+  gap: 6px 28px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--kh-border);
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--kh-surface);
+}
+
+.kh-honest__row:last-child {
+  border-bottom: none;
+}
+
+@media (min-width: 860px) {
+  .kh-honest__row {
+    grid-template-columns: minmax(190px, 0.85fr) minmax(0, 2fr);
+    align-items: baseline;
+  }
+}
+
+.kh-honest__area {
+  font-weight: 620;
+  font-size: 0.98rem;
+}
+
+.kh-honest__who {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  font-size: 0.84rem;
+  color: var(--kh-text-subtle);
+}
+
+.kh-honest__position {
+  color: var(--kh-text-muted);
+  font-size: 0.95rem;
+}
+
+/* ── Download ─────────────────────────────────────────────────────────────── */
+
+.kh-download {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-top: 40px;
+}
+
+.kh-download__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px;
+  border-radius: var(--kh-radius-lg);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface);
+}
+
+.kh-download__card--primary {
+  border-color: var(--kh-accent);
+  background: var(--kh-surface-raised);
+}
+
+.kh-download__platform {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.06rem;
+  font-weight: 640;
+}
+
+.kh-download__how {
+  font-size: 0.95rem;
+  color: var(--kh-accent-subtle-text);
+  font-weight: 560;
+}
+
+.kh-download__detail {
+  color: var(--kh-text-muted);
+  font-size: 0.9rem;
+}
+
+/* The command on its own line, scrollable rather than wrapped: a build command broken across
+   two lines is a build command somebody pastes wrong. */
+.kh-download__command {
+  overflow-x: auto;
+  padding: 10px 12px;
+  border-radius: var(--kh-radius);
+  border: 1px solid var(--kh-border);
+  background: var(--kh-surface-sunken);
+}
+
+.kh-download__command code {
+  font-family: var(--kh-font-mono);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  color: var(--kh-text);
+}
+
+.kh-download__cta {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────────── */
+
+.kh-faq {
+  margin-top: 40px;
+  max-width: 82ch;
+}
+
+.kh-faq__item {
+  border-bottom: 1px solid var(--kh-border);
+}
+
+.kh-faq__item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 4px;
+  cursor: pointer;
+  font-weight: 580;
+  font-size: 1.01rem;
+  list-style: none;
+}
+
+.kh-faq__item summary::-webkit-details-marker {
+  display: none;
+}
+
+.kh-faq__item summary svg {
+  flex: none;
+  color: var(--kh-text-subtle);
+  transition: transform 200ms ease;
+}
+
+.kh-faq__item[open] summary svg {
+  transform: rotate(45deg);
+}
+
+.kh-faq__answer {
+  padding: 0 4px 22px;
+  color: var(--kh-text-muted);
+  font-size: 0.96rem;
+  max-width: 72ch;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.kh-footer {
+  border-top: 1px solid var(--kh-border);
+  padding-block: 44px 56px;
+  color: var(--kh-text-subtle);
+  font-size: 0.9rem;
+}
+
+.kh-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+  align-items: center;
+}
+
+.kh-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-left: auto;
+}
+
+.kh-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--kh-text);
+  font-weight: 620;
+}
+
+.kh-footer__note {
+  flex-basis: 100%;
+  max-width: 74ch;
+  line-height: 1.65;
+}
