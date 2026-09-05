@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://keyhold.app/sitemap.xml
+Sitemap: https://keyhold.anahatmudgal.com/sitemap.xml

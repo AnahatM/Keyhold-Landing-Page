@@ -14,12 +14,13 @@
 [![Portfolio](https://img.shields.io/badge/Portfolio-anahatmudgal.com-796eb3?style=flat-square&logo=googlechrome&logoColor=white)](https://anahatmudgal.com)
 [![GitHub](https://img.shields.io/badge/GitHub-AnahatM-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/anahatm)
 
+[![Live site](https://img.shields.io/badge/Live-keyhold.anahatmudgal.com-4ade80?style=for-the-badge&logo=vercel&logoColor=white)](https://keyhold.anahatmudgal.com)
 [![The app itself](https://img.shields.io/badge/The_app_itself-AnahatM%2FKeyhold-7aa2ff?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AnahatM/Keyhold)
 
 </div>
 
 > [!NOTE]
-> Not deployed yet. The repository exists; the hosting decision does not, and it is recorded in Keyhold's own `MANUAL-BACKLOG.md` (M6). Run it locally with `npm install && npm run dev`.
+> **Live at [keyhold.anahatmudgal.com](https://keyhold.anahatmudgal.com).** Run it locally with `npm install && npm run dev`.
 
 ---
 
@@ -85,13 +86,13 @@ loads nothing from a third party, so `default-src 'self'` and `connect-src 'none
 nothing), plus `nosniff`, `no-referrer`, a `Permissions-Policy` that denies every sensor, and
 long cache lifetimes on the hashed asset bundle.
 
-**One thing must change when the real domain is chosen.** The origin appears three times in
-`index.html` — `<link rel="canonical">`, `og:url` and `og:image` — and once each in
-`public/robots.txt` and `public/sitemap.xml`. They are duplicated rather than templated, and
-that is only safe because `npm run check:assets` fails the build when the three in
-`index.html` disagree. If the site lives at `keyhold.vercel.app` rather than `keyhold.app`,
-change all five; a canonical pointing at a domain that does not serve the page is worse than
-none at all.
+**The site is live at [keyhold.anahatmudgal.com](https://keyhold.anahatmudgal.com).** That
+origin appears three times in `index.html` — `<link rel="canonical">`, `og:url` and
+`og:image` — and once each in `public/robots.txt` and `public/sitemap.xml`. They are
+duplicated rather than templated, and that is only safe because `npm run check:assets` fails
+the build when the three in `index.html` disagree. **If the domain ever moves, change all
+five**; a canonical pointing at a domain that does not serve the page is worse than none at
+all.
 
 `og:image` must stay **absolute**. Open Graph resolves nothing relative, so a path there
 means every link to this page — Slack, Discord, X, iMessage — renders a card with no
