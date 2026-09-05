@@ -35,7 +35,15 @@
       property="og:description"
       content="One encrypted file you own. No account, no server, no telemetry, no subscription — and a full version history with the device and network each change came from."
     />
-    <meta property="og:image" content="/screenshots/Keyhold-Screenshot-03.png" />
+    <!--
+      Absolute, and it has to be. Open Graph resolves nothing: a relative `og:image` is
+      simply dropped, so every link to this page — Slack, Discord, X, Mastodon, iMessage —
+      would render a card with no picture and nobody would find out, because the page itself
+      looks fine. The origin here must match the `canonical` above and the `og:url` below;
+      `tools/check-assets.mjs` fails the build if the three ever disagree.
+    -->
+    <meta property="og:url" content="https://keyhold.app/" />
+    <meta property="og:image" content="https://keyhold.app/screenshots/Keyhold-Screenshot-03.png" />
     <meta
       property="og:image:alt"
       content="Keyhold showing a credential's version history, with the device each change came from"

@@ -1,2 +1,18 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Line endings are normalised to LF **in the working tree, on every platform**, not only in
+# the repository. `text=auto` alone stores LF but checks out CRLF on Windows, and Prettier is
+# configured `"endOfLine": "lf"` — so a fresh clone on Windows failed `npm run format:check`
+# on all thirty files, which is the first step of `npm run verify`. Green on CI, red for
+# every Windows contributor, with nothing in the diff to explain it.
+#
+# This matches the Keyhold repository's own `.gitattributes`, which had `eol=lf` from the
+# start. This file was a copy of it with that word missing.
+* text=auto eol=lf
+
+# Binary — never touch these. `text=auto` usually detects them, but "usually" is not a rule,
+# and a screenshot corrupted by line-ending translation is a broken page.
+*.png binary
+*.jpg binary
+*.ico binary
+*.svg text
+*.woff binary
+*.woff2 binary

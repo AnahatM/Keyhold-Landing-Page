@@ -1,0 +1,5 @@
+# One page, and every part of it is meant to be read.
+User-agent: *
+Allow: /
+
+Sitemap: https://keyhold.app/sitemap.xml

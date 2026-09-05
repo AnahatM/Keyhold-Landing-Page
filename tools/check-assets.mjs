@@ -29,6 +29,17 @@ import { fileURLToPath } from 'node:url';
  * failed with `referenced but missing`, dropping a screenshot from `site.ts` failed with
  * `shipped but referenced nowhere`, and renaming one under `docs/images` failed with
  * `referenced by the README but missing`.
+ *
+ * ## It also checks the share metadata, for the same reason
+ *
+ * `og:image` shipped as a **relative** path, which Open Graph does not resolve — it is simply
+ * dropped. Every link to this page anywhere would have rendered a card with no picture, and
+ * nothing would have said so: the page itself looks perfect, the file exists, the build
+ * passes. It is the same class of silent defect as a missing screenshot, one layer out.
+ *
+ * The origin is written three times in `index.html` — `canonical`, `og:url`, `og:image` — and
+ * that duplication is only safe because this checks they agree. When the site moves to its
+ * real domain, change all three and this will tell you if you missed one.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -95,6 +106,39 @@ for (const path of shipped) {
   }
 }
 
+// ── Share metadata ───────────────────────────────────────────────────────────
+
+const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
+const contentOf = (pattern) => pattern.exec(html)?.[1] ?? null;
+
+const canonical = contentOf(/<link rel="canonical" href="([^"]+)"/);
+const ogUrl = contentOf(/<meta property="og:url" content="([^"]+)"/);
+const ogImage = contentOf(/<meta\s+property="og:image"\s+content="([^"]+)"/);
+
+if (canonical === null) problems.push('index.html has no <link rel="canonical">');
+if (ogUrl === null) problems.push('index.html has no og:url');
+if (ogImage === null) problems.push('index.html has no og:image');
+
+if (canonical !== null && ogImage !== null && ogUrl !== null) {
+  let origin = null;
+  try {
+    origin = new URL(canonical).origin;
+  } catch {
+    problems.push(`canonical is not an absolute URL: ${canonical}`);
+  }
+
+  if (!ogImage.startsWith('http')) {
+    // The defect this check exists for. Open Graph resolves nothing relative.
+    problems.push(`og:image must be an absolute URL, not a path: ${ogImage}`);
+  } else if (origin !== null && !ogImage.startsWith(`${origin}/`)) {
+    problems.push(`og:image origin does not match canonical (${origin}): ${ogImage}`);
+  }
+
+  if (origin !== null && new URL(ogUrl).origin !== origin) {
+    problems.push(`og:url origin does not match canonical (${origin}): ${ogUrl}`);
+  }
+}
+
 if (problems.length > 0) {
   console.error(`check-assets: ${String(problems.length)} problem(s):`);
   for (const problem of problems) console.error(`  ${problem}`);
@@ -104,3 +148,4 @@ if (problems.length > 0) {
 console.log(
   `check-assets: ${String(referenced.size)} page asset(s) and ${String(docReferenced.size)} README asset(s) present, none shipped unused.`
 );
+console.log(`check-assets: share metadata absolute and consistent at ${String(canonical)}`);

@@ -37,7 +37,15 @@ export function ScreenshotFrame({
             decoding="async"
           />
         </div>
-        <figcaption>{caption}</figcaption>
+        <figcaption>
+          {caption}
+          {/*
+            Shown only under 700px, where the image pans inside its frame instead of
+            shrinking to an unreadable width. Real text rather than a `::after`, so a screen
+            reader gets it and so it can be translated.
+          */}
+          <span className="kh-shot__pan">Scroll the image sideways to read the whole window.</span>
+        </figcaption>
       </figure>
     </div>
   );

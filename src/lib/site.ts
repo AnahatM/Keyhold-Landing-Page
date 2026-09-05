@@ -21,6 +21,15 @@
  * No download counts, no star counts, no testimonials, no "trusted by", no urgency, no
  * newsletter. The product is a local file with no account; a page that collects an email
  * address to tell you about it would be undercutting the pitch on the first scroll.
+ *
+ * ## The interop rule, which this page has already broken once
+ *
+ * A format Keyhold can *write* is not a format another application has *read*. Three of the
+ * six export formats — KDBX 4 among them — have never been opened in the application they
+ * target, every import parser is tested against synthetic files rather than genuine exports,
+ * and the app itself says so on both screens. This page said "KDBX 4 that opens in
+ * KeePassXC" in two places, which is the app's own beta chip contradicted by its marketing.
+ * When in doubt, write what has been *checked*, not what is *intended*.
  */
 
 export const site = {
@@ -80,7 +89,7 @@ export const pitch: readonly Claim[] = [
   },
   {
     title: 'Lets you leave',
-    body: 'Nineteen import formats, KDBX 4 in both directions, a lossless JSON export, and a file format documented well enough for somebody else to write a reader.',
+    body: 'Nineteen import formats, KDBX 4 in both directions, a lossless JSON export, and a file format documented well enough for somebody else to write a reader. The formats other applications own are built but not yet confirmed against them, and Keyhold says which are which.',
   },
 ];
 
@@ -130,7 +139,7 @@ export const features: readonly Feature[] = [
   },
   {
     title: 'Import from the manager you are leaving',
-    body: 'Nineteen formats — Bitwarden, LastPass, 1Password, Chrome, Firefox, Safari, Dashlane, NordPass, KeePass, Proton Pass, Enpass, Keeper, RoboForm and a generic CSV mapper — plus KDBX 4. Every import is a dry run first, with duplicate detection, a full report, and an undo that refuses rather than swallowing an edit you made in the meantime.',
+    body: 'Nineteen formats — Bitwarden, LastPass, 1Password, Chrome, Firefox, Safari, Dashlane, NordPass, KeePass, Proton Pass, Enpass, Keeper, RoboForm and a generic CSV mapper — plus KDBX 4. Every reader is written to its format’s published shape and tested against synthetic files rather than genuine exports, and the import screen says so. Every import is a dry run first, with duplicate detection, a full report, and an undo that refuses rather than swallowing an edit you made in the meantime.',
   },
   {
     title: 'Real merge sync, without a server',
@@ -245,7 +254,7 @@ export const tradeOffs: readonly TradeOff[] = [
     area: 'Mobile apps',
     who: '1Password, Bitwarden, Proton, the KeePassXC family',
     position:
-      'Not in scope. Partly mitigated: Keyhold exports KDBX 4, which opens in a mobile KeePass client today.',
+      'Not in scope. Partly mitigated in principle: Keyhold exports KDBX 4, which is meant to open in a mobile KeePass client — but no KeePass application has yet opened a Keyhold-written database, so treat that as untested rather than as a route off this app.',
   },
   {
     area: 'A third-party security audit',
@@ -313,7 +322,7 @@ export const faqs: readonly Faq[] = [
   {
     question: 'How do I get my data out?',
     answer:
-      'Six ways, including KDBX 4 that opens in KeePassXC, Bitwarden’s own JSON, a flat CSV, and a lossless Keyhold JSON that carries every version and every origin. The KEEP format itself is documented in the repository. "You can leave whenever you want" is only worth saying if somebody else can write a reader.',
+      'Six ways, including KDBX 4 for the KeePass family, Bitwarden’s own JSON, a flat CSV, and a lossless Keyhold JSON that carries every version and every origin. Three of the six have never been opened in the application they target — KDBX among them — and the export screen carries a “Not verified yet” badge on each saying exactly which check is missing. The KEEP format itself is documented in the repository. "You can leave whenever you want" is only worth saying if somebody else can write a reader.',
   },
   {
     question: 'Why is it free, and what is the catch?',

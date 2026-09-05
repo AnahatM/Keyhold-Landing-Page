@@ -498,7 +498,7 @@ button {
 .kh-pitch {
   display: grid;
   gap: 22px;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   margin-top: 44px;
 }
 
@@ -536,10 +536,18 @@ button {
   margin-top: 44px;
 }
 
+/*
+ * `minmax(min(300px, 100%), 1fr)` rather than `minmax(300px, 1fr)`, and the `min()` is not
+ * decoration. A bare fixed minimum is a floor the track cannot go below even when the
+ * container is narrower, so on a 320px screen — where the gutter leaves 272px of content —
+ * every one of these grids laid out a 300px column and pushed the whole page 4px sideways.
+ * The `min()` lets the track collapse to the container instead. The same fix is applied to
+ * every `auto-fit` grid in this file; they all had it.
+ */
 .kh-spotlight__points {
   display: grid;
   gap: 26px 40px;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
 }
 
 .kh-spotlight__point {
@@ -573,7 +581,7 @@ button {
 .kh-features {
   display: grid;
   gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   margin-top: 44px;
 }
 
@@ -749,6 +757,75 @@ button {
   color: var(--kh-text);
 }
 
+/*
+ * On a phone, the same argument as above but with far more force.
+ *
+ * These are 1384px captures of a three-pane desktop application. Scaled to fit a 390px
+ * viewport each one is about 350px wide — a dark smear with no readable label in it — and
+ * there are ten of them, which is most of a seventeen-thousand-pixel page spent on pictures
+ * nobody can read. The comment on `.kh-shots` already says a shorter page of unreadable
+ * pictures is worse than a longer one of readable ones; that stopped being true of the
+ * mobile layout, where the pictures were unreadable *and* the page was longer.
+ *
+ * So below this width the capture keeps a legible size and pans inside its own frame,
+ * rather than shrinking to fit. The frame is the scroll container, so the page itself never
+ * scrolls sideways — a body that moves horizontally on a phone feels broken even when the
+ * content is fine.
+ */
+@media (max-width: 700px) {
+  /*
+   * `min-width: 0` is the load-bearing line, and leaving it out is a real bug this rule
+   * shipped with for one build: a grid or flex item defaults to `min-width: auto`, which
+   * refuses to shrink below its content's minimum. So the item grew to the full 1384px
+   * image, `overflow-x: auto` on the frame never had anything to clip, and the *page* took
+   * the scroll instead — captions running off the right edge and a body that slid sideways
+   * on a phone. The whole chain from the grid item down to the frame has to opt out of it.
+   */
+  .kh-shot,
+  .kh-shot figure,
+  .kh-shot__frame,
+  .kh-hero__shot {
+    min-width: 0;
+  }
+
+  .kh-shot__frame,
+  .kh-hero__shot {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    /* A visible edge, so it reads as pannable rather than as a cropped image. */
+    scrollbar-width: thin;
+  }
+
+  /*
+   * An explicit width, not a `min-width` on an `auto`-width image: with `width: auto` the
+   * image renders at its natural 1384px and the minimum never applies. 760 is chosen to
+   * show the sidebar and one full pane — enough that a label is readable — while keeping
+   * the image's height, and so the page's, from doubling.
+   */
+  .kh-shot__frame img,
+  .kh-hero__shot img {
+    width: 760px;
+    max-width: none;
+    height: auto;
+  }
+
+  .kh-shot__pan {
+    display: block;
+  }
+}
+
+/*
+ * Hidden by default: on a display where the whole capture fits, telling somebody to scroll
+ * it sideways is an instruction to do nothing.
+ */
+.kh-shot__pan {
+  display: none;
+  margin-top: 4px;
+  color: var(--kh-text-subtle);
+  font-size: 0.82rem;
+}
+
 /* ── The honest comparison ────────────────────────────────────────────────── */
 
 .kh-honest {
@@ -801,7 +878,7 @@ button {
 .kh-download {
   display: grid;
   gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   margin-top: 40px;
 }
 

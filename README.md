@@ -19,7 +19,7 @@
 </div>
 
 > [!NOTE]
-> Not deployed yet, and not a git repository yet — both are deliberate, and both are recorded in Keyhold's own `MANUAL-BACKLOG.md`. Run it locally with `npm install && npm run dev`.
+> Not deployed yet. The repository exists; the hosting decision does not, and it is recorded in Keyhold's own `MANUAL-BACKLOG.md` (M6). Run it locally with `npm install && npm run dev`.
 
 ---
 
@@ -70,12 +70,33 @@ npm run verify    # format:check + lint + check:assets + build — the whole gat
 They come from the Keyhold repository, generated rather than taken by hand:
 
 ```bash
-cd ../Credentials-App
+cd ../Keyhold
 npm run build && node tools/smoke.mjs --shots docs/images
-cp docs/images/*.png ../KeyholdLandingPage/public/screenshots/
+cp docs/images/*.png ../Keyhold-Landing-Page/public/screenshots/
 ```
 
 Then run `npm run check:assets` — it will tell you if a filename moved and the page still points at the old one.
+
+## Deployment
+
+Static files, so any host works. `vercel.json` sets the build command, the output directory
+and the response headers — a content-security policy matching the page's own promise (it
+loads nothing from a third party, so `default-src 'self'` and `connect-src 'none'` cost
+nothing), plus `nosniff`, `no-referrer`, a `Permissions-Policy` that denies every sensor, and
+long cache lifetimes on the hashed asset bundle.
+
+**One thing must change when the real domain is chosen.** The origin appears three times in
+`index.html` — `<link rel="canonical">`, `og:url` and `og:image` — and once each in
+`public/robots.txt` and `public/sitemap.xml`. They are duplicated rather than templated, and
+that is only safe because `npm run check:assets` fails the build when the three in
+`index.html` disagree. If the site lives at `keyhold.vercel.app` rather than `keyhold.app`,
+change all five; a canonical pointing at a domain that does not serve the page is worse than
+none at all.
+
+`og:image` must stay **absolute**. Open Graph resolves nothing relative, so a path there
+means every link to this page — Slack, Discord, X, iMessage — renders a card with no
+picture, silently, while the page itself looks perfect. That was a real defect here, and the
+asset check now refuses it.
 
 ## Project Structure
 
